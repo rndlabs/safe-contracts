@@ -19,6 +19,20 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         log: true,
         deterministicDeployment: true,
     });
+
+    const defaultHandler = await deploy("ExtensibleDefaultFallbackHandler", {
+        from: deployer,
+        args: [],
+        log: true,
+        deterministicDeployment: true,
+    });
+
+    await deploy("ExtensibleFallbackHandler", {
+        from: deployer,
+        args: [defaultHandler.address],
+        log: true,
+        deterministicDeployment: true,
+    });
 };
 
 deploy.tags = ["handlers", "l2-suite", "main-suite"];
