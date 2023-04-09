@@ -18,8 +18,32 @@ export const compatFallbackHandlerDeployment = async () => {
     return await deployments.get("CompatibilityFallbackHandler");
 };
 
+export const extensibleFallbackHandlerDeployment = async () => {
+    return await deployments.get("ExtensibleFallbackHandler");
+};
+
+export const extensibleDefaultFallbackHandlerDeployment = async () => {
+    return await deployments.get("ExtensibleDefaultFallbackHandler");
+};
+
+export const signatureVerifierMuxerDeployment = async () => {
+    return await deployments.get("SignatureVerifierMuxer");
+};
+
 export const compatFallbackHandlerContract = async () => {
     return await hre.ethers.getContractFactory("CompatibilityFallbackHandler");
+};
+
+export const extensibleFallbackHandlerContract = async () => {
+    return await hre.ethers.getContractFactory("ExtensibleFallbackHandler");
+};
+
+export const extensibleDefaultFallbackHandlerContract = async () => {
+    return await hre.ethers.getContractFactory("ExtensibleDefaultFallbackHandler");
+};
+
+export const signatureVerifierMuxerContract = async () => {
+    return await hre.ethers.getContractFactory("SignatureVerifierMuxer");
 };
 
 export const getSafeSingleton = async () => {
@@ -98,6 +122,14 @@ export const getTokenCallbackHandler = async () => {
 
 export const getCompatFallbackHandler = async () => {
     return (await compatFallbackHandlerContract()).attach((await compatFallbackHandlerDeployment()).address);
+};
+
+export const getExtensibleFallbackHandler = async () => {
+    return (await extensibleFallbackHandlerContract()).attach((await extensibleFallbackHandlerDeployment()).address);
+};
+
+export const getExtensibleDefaultFallbackHandler = async () => {
+    return (await extensibleDefaultFallbackHandlerContract()).attach((await extensibleDefaultFallbackHandlerDeployment()).address);
 };
 
 export const getSafeProxyRuntimeCode = async () => {
