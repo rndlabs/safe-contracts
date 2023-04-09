@@ -21,12 +21,7 @@ contract ExtensibleFallbackHandler is HandlerContext {
     mapping(Safe => address) internal defaultFallbackHandlers;
 
     event AddedSafeMethod(Safe indexed safe, bytes4 selector, IFallbackMethod handler);
-    event ChangedSafeMethod(
-        Safe indexed safe,
-        bytes4 selector,
-        IFallbackMethod oldHandler,
-        IFallbackMethod newHandler
-    );
+    event ChangedSafeMethod(Safe indexed safe, bytes4 selector, IFallbackMethod oldHandler, IFallbackMethod newHandler);
     event RemovedSafeMethod(Safe indexed safe, bytes4 selector);
 
     event ChangedDefaultFallbackHandler(Safe indexed safe, address oldHandler, address newHandler);
