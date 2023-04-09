@@ -15,7 +15,7 @@ import "../../Safe.sol";
  * @author Richard Meissner - @rmeissner
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-contract CompatibilityFallbackHandler is TokenCallbackHandler, ISignatureValidator, ExtensibleHandlerContext {
+contract ExtensibleDefaultFallbackHandler is TokenCallbackHandler, ISignatureValidator, ExtensibleHandlerContext {
     // keccak256("SafeMessage(bytes message)");
     bytes32 private constant SAFE_MSG_TYPEHASH = 0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca;
 
