@@ -21,7 +21,6 @@ abstract contract ExtensibleHandlerContext {
      * @return sender Original caller address.
      */
     function _msgSender() internal pure returns (address sender) {
-        require(msg.data.length >= 40);
         // The assembly code is more direct than the Solidity version using `abi.decode`.
         // solhint-disable-next-line no-inline-assembly
         assembly {
@@ -35,7 +34,6 @@ abstract contract ExtensibleHandlerContext {
      * @return manager Original fallback manager address.
      */
     function _manager() internal pure returns (address manager) {
-        require(msg.data.length >= 40);
         // solhint-disable-next-line no-inline-assembly
         assembly {
             manager := shr(96, calldataload(sub(calldatasize(), 40)))
