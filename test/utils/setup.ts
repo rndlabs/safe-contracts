@@ -132,6 +132,10 @@ export const getExtensibleDefaultFallbackHandler = async () => {
     return (await extensibleDefaultFallbackHandlerContract()).attach((await extensibleDefaultFallbackHandlerDeployment()).address);
 };
 
+export const getSignatureVerifierMuxer = async () => {
+    return (await signatureVerifierMuxerContract()).attach((await signatureVerifierMuxerDeployment()).address);
+};
+
 export const getSafeProxyRuntimeCode = async () => {
     const proxyArtifact = await hre.artifacts.readArtifact("SafeProxy");
 
