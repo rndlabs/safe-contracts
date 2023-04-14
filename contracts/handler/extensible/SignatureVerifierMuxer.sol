@@ -132,14 +132,14 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
         view
         returns (bytes4 magic)
     {
+        bytes memory messageData =
+            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, keccak256(abi.encode(_hash)));
+        bytes32 messageHash = keccak256(messageData);
         if (signature.length == 0) {
             // approved hashes
-            require(safe.signedMessages(_hash) != 0, "Hash not approved");
+            require(safe.signedMessages(messageHash) != 0, "Hash not approved");
         } else {
             // threshold signatures
-            bytes memory messageData =
-                EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, keccak256(abi.encode(_hash)));
-            bytes32 messageHash = keccak256(messageData);
             safe.checkSignatures(messageHash, messageData, signature);
         }
         magic = ERC1271.isValidSignature.selector;
