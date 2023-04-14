@@ -2,6 +2,7 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 import "./Base.sol";
+import "../../interfaces/ISignatureValidator.sol";
 
 interface ERC1271 {
     function isValidSignature(bytes32 hash, bytes calldata signature) external view returns (bytes4 magicValue);
@@ -46,7 +47,7 @@ interface ISafeSignatureVerifier {
  *      an `ISafeSignatureVerifier` from being able to verify signatures for multiple domainSeparators, however
  *      each domainSeparator requires specific approval by Safe.
  */
-abstract contract SignatureVerifierMuxer is ExtensibleBase {
+abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator {
     // --- constants ---
     // keccak256("SafeMessage(bytes message)");
     bytes32 private constant SAFE_MSG_TYPEHASH = 0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca;
@@ -118,7 +119,22 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
         }
 
         // domainVerifier doesn't exist or the signature is invalid for the domain - fall back to the default
-        return defaultIsValidSignature(safe, _hash, signature);
+        return defaultIsValidSignature(safe, abi.encode(_hash), signature);
+    }
+
+    /**
+     * @notice Legacy EIP-1271 signature validation method.
+     * @dev Implementation of ISignatureValidator (see `interfaces/ISignatureValidator.sol`)
+     * @param _data Arbitrary length data signed on the behalf of address(msg.sender).
+     * @param _signature Signature byte array associated with _data.
+     * @return a bool upon valid or invalid signature with corresponding _data.
+     */
+    function isValidSignature(bytes memory _data, bytes memory _signature) public view override returns (bytes4) {
+        // Caller should be a Safe
+        Safe safe = Safe(payable(msg.sender));
+        return defaultIsValidSignature(safe, _data, _signature) == ERC1271.isValidSignature.selector
+            ? EIP1271_MAGIC_VALUE
+            : bytes4(0);
     }
 
     /**
@@ -127,13 +143,13 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
      * @param _hash Hash of the data that is signed
      * @param signature The signature to be verified
      */
-    function defaultIsValidSignature(Safe safe, bytes32 _hash, bytes calldata signature)
+    function defaultIsValidSignature(Safe safe, bytes memory _hash, bytes memory signature)
         internal
         view
         returns (bytes4 magic)
     {
         bytes memory messageData =
-            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, keccak256(abi.encode(_hash)));
+            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, keccak256(_hash));
         bytes32 messageHash = keccak256(messageData);
         if (signature.length == 0) {
             // approved hashes
