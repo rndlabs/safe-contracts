@@ -41,11 +41,15 @@ abstract contract IERC165Handler is ExtensibleBase {
      * @param _interfaceId The interface id to set
      * @param handlerWithSelectors The handlers encoded with the 4-byte selectors of the methods
      */
-    function setSupportedInterfaceBatch(bytes4 _interfaceId, bytes32[] calldata handlerWithSelectors) external onlySelf {
+    function setSupportedInterfaceBatch(bytes4 _interfaceId, bytes32[] calldata handlerWithSelectors)
+        external
+        onlySelf
+    {
         Safe safe = Safe(payable(_msgSender()));
         bytes4 interfaceId;
         for (uint256 i = 0; i < handlerWithSelectors.length; i++) {
-            (bool isStatic, bytes4 selector, address handlerAddress) = MarshalLib.decodeWithSelector(handlerWithSelectors[i]);
+            (bool isStatic, bytes4 selector, address handlerAddress) =
+                MarshalLib.decodeWithSelector(handlerWithSelectors[i]);
             _setSafeMethod(safe, selector, MarshalLib.encode(isStatic, handlerAddress));
             if (i > 0) {
                 interfaceId ^= selector;
@@ -65,9 +69,8 @@ abstract contract IERC165Handler is ExtensibleBase {
      * @return True if the interface is supported
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool) {
-        return interfaceId == type(IERC165).interfaceId || 
-            _supportsInterface(interfaceId) || 
-            safeInterfaces[Safe(payable(_manager()))][interfaceId];
+        return interfaceId == type(IERC165).interfaceId || _supportsInterface(interfaceId)
+            || safeInterfaces[Safe(payable(_manager()))][interfaceId];
     }
 
     // --- internal ---
@@ -78,5 +81,4 @@ abstract contract IERC165Handler is ExtensibleBase {
      * @return True if the interface is supported
      */
     function _supportsInterface(bytes4 interfaceId) internal view virtual returns (bool);
-
 }
