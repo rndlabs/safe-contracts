@@ -21,12 +21,7 @@ interface IStaticFallbackMethod {
 abstract contract ExtensibleBase is HandlerContext {
     // --- events ---
     event AddedSafeMethod(Safe indexed safe, bytes4 selector, bytes32 method);
-    event ChangedSafeMethod(
-        Safe indexed safe,
-        bytes4 selector,
-        bytes32 oldMethod,
-        bytes32 newMethod
-    );
+    event ChangedSafeMethod(Safe indexed safe, bytes4 selector, bytes32 oldMethod, bytes32 newMethod);
     event RemovedSafeMethod(Safe indexed safe, bytes4 selector);
 
     // --- storage ---
@@ -52,7 +47,7 @@ abstract contract ExtensibleBase is HandlerContext {
     function _setSafeMethod(Safe safe, bytes4 selector, bytes32 newMethod) internal {
         (, address newHandler) = MarshalLib.decode(newMethod);
         bytes32 oldMethod = safeMethods[safe][selector];
-        (, address oldHandler) =  MarshalLib.decode(oldMethod);
+        (, address oldHandler) = MarshalLib.decode(oldMethod);
 
         if (address(newHandler) == address(0) && address(oldHandler) != address(0)) {
             delete safeMethods[safe][selector];
@@ -81,7 +76,7 @@ abstract contract ExtensibleBase is HandlerContext {
      * Try to call a static (view-only) fallback method, if one is set
      */
     function _tryStaticFallbackMethod() internal view {
-        (Safe safe, address sender, , address handler) = _getContextAndHandler();
+        (Safe safe, address sender,, address handler) = _getContextAndHandler();
         // If a handler is set, call it and return the result
         if (handler != address(0)) {
             IStaticFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
@@ -94,7 +89,7 @@ abstract contract ExtensibleBase is HandlerContext {
      * Try to call a non-static (state-changing) fallback method, if one is set
      */
     function _tryFallbackMethod() internal {
-        (Safe safe, address sender, , address handler) = _getContextAndHandler();
+        (Safe safe, address sender,, address handler) = _getContextAndHandler();
         // If a handler is set, call it and return the result
         if (handler != address(0)) {
             IFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
@@ -106,7 +101,7 @@ abstract contract ExtensibleBase is HandlerContext {
     /**
      * Return the result of the call to the FallbackManager
      * @dev This is a helper function to avoid code duplication in the `_tryStaticFallbackMethod` and `_tryFallbackMethod` functions.
-     *      In order to generalise the return value of the call to the FallbackManager, we use assembly to copy the return data 
+     *      In order to generalise the return value of the call to the FallbackManager, we use assembly to copy the return data
      *      of the call to the handler contract to the return data of the call to the FallbackManager.
      *      This is necessary because the return value of the call to the handler contract is not known at compile time.
      */
@@ -123,7 +118,11 @@ abstract contract ExtensibleBase is HandlerContext {
      * @return isStatic Whether the method is static (`view`) or not
      * @return handler the address of the handler contract
      */
-    function _getContextAndHandler() internal view returns (Safe safe, address sender, bool isStatic, address handler) {
+    function _getContextAndHandler()
+        internal
+        view
+        returns (Safe safe, address sender, bool isStatic, address handler)
+    {
         (safe, sender) = _getContext();
         (isStatic, handler) = MarshalLib.decode(safeMethods[safe][msg.sig]);
     }

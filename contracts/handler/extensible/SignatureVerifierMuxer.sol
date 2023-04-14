@@ -26,10 +26,15 @@ interface ISafeSignatureVerifier {
      * @param payload An arbitrary payload that can be used to pass additional data to the verifier
      * @return magic The magic value that should be returned if the signature is valid (0x1626ba7e)
      */
-    function isValidSafeSignature(Safe safe, address sender, bytes32 _hash, bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData, bytes calldata payload)
-        external
-        view
-        returns (bytes4 magic);
+    function isValidSafeSignature(
+        Safe safe,
+        address sender,
+        bytes32 _hash,
+        bytes32 domainSeparator,
+        bytes32 typeHash,
+        bytes32 encodeData,
+        bytes calldata payload
+    ) external view returns (bytes4 magic);
 }
 
 /**
@@ -82,7 +87,6 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
         }
     }
 
-
     /**
      * @notice Implements ERC1271 interface for smart contract EIP-712 signature validation
      * @dev The signature format is the same as the one used by the Safe contract
@@ -96,7 +100,8 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
         // Check if the signature is for an `ISafeSignatureVerifier` and if it is valid for the domain.
         if (signature.length >= 100 && abi.decode(signature[0:4], (bytes4)) == SAFE_SIGNATURE_MAGIC_VALUE) {
             // Get the domainSeparator from the signature.
-            (bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData) = abi.decode(signature[4:100], (bytes32, bytes32, bytes32));
+            (bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData) =
+                abi.decode(signature[4:100], (bytes32, bytes32, bytes32));
             ISafeSignatureVerifier verifier = domainVerifiers[safe][domainSeparator];
             // Check if there is an `ISafeSignatureVerifier` for the domain.
             if (address(verifier) != address(0)) {
@@ -105,7 +110,9 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
                 // Check that the signature is valid for the domain.
                 if (keccak256(EIP712.encodeMessageData(domainSeparator, typeHash, encodeData)) == _hash) {
                     // Preserving the context, call the Safe's authorised `ISafeSignatureVerifier` to verify.
-                    return verifier.isValidSafeSignature(safe, sender, _hash, domainSeparator, typeHash, encodeData, payload);
+                    return verifier.isValidSafeSignature(
+                        safe, sender, _hash, domainSeparator, typeHash, encodeData, payload
+                    );
                 }
             }
         }
@@ -120,13 +127,18 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
      * @param _hash Hash of the data that is signed
      * @param signature The signature to be verified
      */
-    function defaultIsValidSignature(Safe safe, bytes32 _hash, bytes calldata signature) internal view returns (bytes4 magic) {
+    function defaultIsValidSignature(Safe safe, bytes32 _hash, bytes calldata signature)
+        internal
+        view
+        returns (bytes4 magic)
+    {
         if (signature.length == 0) {
             // approved hashes
             require(safe.signedMessages(_hash) != 0, "Hash not approved");
         } else {
             // threshold signatures
-            bytes memory messageData = EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, keccak256(abi.encode(_hash)));
+            bytes memory messageData =
+                EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, keccak256(abi.encode(_hash)));
             bytes32 messageHash = keccak256(messageData);
             safe.checkSignatures(messageHash, messageData, signature);
         }
@@ -135,7 +147,11 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase {
 }
 
 library EIP712 {
-    function encodeMessageData(bytes32 domainSeparator, bytes32 typeHash, bytes32 message) internal pure returns (bytes memory) {
+    function encodeMessageData(bytes32 domainSeparator, bytes32 typeHash, bytes32 message)
+        internal
+        pure
+        returns (bytes memory)
+    {
         return abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, keccak256(abi.encode(typeHash, message)));
     }
 }
