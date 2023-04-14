@@ -22,6 +22,14 @@ export const compatFallbackHandlerContract = async () => {
     return await hre.ethers.getContractFactory("CompatibilityFallbackHandler");
 };
 
+export const extensibleFallbackHandlerDeployment = async () => {
+    return await deployments.get("ExtensibleFallbackHandler");
+};
+
+export const extensibleFallbackHandlerContract = async () => {
+    return await hre.ethers.getContractFactory("ExtensibleFallbackHandler");
+};
+
 export const getSafeSingleton = async () => {
     const SafeDeployment = await deployments.get(safeContractUnderTest());
     const Safe = await hre.ethers.getContractFactory(safeContractUnderTest());
@@ -110,6 +118,10 @@ export const getTokenCallbackHandler = async () => {
 
 export const getCompatFallbackHandler = async () => {
     return (await compatFallbackHandlerContract()).attach((await compatFallbackHandlerDeployment()).address);
+};
+
+export const getExtensibleFallbackHandler = async () => {
+    return (await extensibleFallbackHandlerContract()).attach((await extensibleFallbackHandlerDeployment()).address);
 };
 
 export const getSafeProxyRuntimeCode = async () => {
