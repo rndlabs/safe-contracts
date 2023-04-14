@@ -3,7 +3,7 @@ import { expect } from "chai";
 import hre, { deployments, waffle, ethers } from "hardhat";
 import "@nomiclabs/hardhat-ethers";
 import { AddressZero } from "@ethersproject/constants";
-import { extensibleFallbackHandlerContract, getCompatFallbackHandler, getExtensibleFallbackHandler, getSafeWithOwners } from "../utils/setup";
+import { extensibleFallbackHandlerContract, getExtensibleFallbackHandler, getSafeWithOwners } from "../utils/setup";
 import {
     buildSignatureBytes,
     executeContractCallWithSigners,
@@ -23,7 +23,6 @@ describe("ExtensibleFallbackHandler", async () => {
         await deployments.fixture();
         const signLib = await (await hre.ethers.getContractFactory("SignMessageLib")).deploy();
         const handler = await getExtensibleFallbackHandler();
-        // const signerHandler = await getCompatFallbackHandler();
         const signerSafe = await getSafeWithOwners([user1.address], 1, handler.address);
         const safe = await getSafeWithOwners([user1.address, user2.address, signerSafe.address], 2, handler.address);
         const validator = (await extensibleFallbackHandlerContract()).attach(safe.address);
