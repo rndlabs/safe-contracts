@@ -97,9 +97,25 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
      */
     function isValidSignature(bytes32 _hash, bytes calldata signature) external view returns (bytes4 magic) {
         (Safe safe, address sender) = _getContext();
+        
+        bytes4 sigSelector;
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            // For solidity v0.7.6 - extract the first 4 bytes of the signature
+            // (the selector of the signature method)
+            // Use calldata offset 100 bytes to skip:
+            //  - 4 bytes for the method selector
+            //  - 32 bytes for the _hash parameter
+            //  - 64 bytes for the solidity memory pointer to the signature
+            // There is no need to check the length of the calldata as the
+            // `calldataload` will return 0 for any bytes that are not available.
+            // If using a newer version of solidity, this can be replaced with:
+            // bytes4(signature[0:4])
+            sigSelector := calldataload(100)
+        }
 
         // Check if the signature is for an `ISafeSignatureVerifier` and if it is valid for the domain.
-        if (signature.length >= 100 && abi.decode(signature[0:4], (bytes4)) == SAFE_SIGNATURE_MAGIC_VALUE) {
+        if (sigSelector == SAFE_SIGNATURE_MAGIC_VALUE) {
             // Get the domainSeparator from the signature.
             (bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData) =
                 abi.decode(signature[4:100], (bytes32, bytes32, bytes32));
