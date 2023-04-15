@@ -72,44 +72,44 @@ abstract contract ExtensibleBase is HandlerContext {
         sender = _msgSender();
     }
 
-    /**
-     * Try to call a static (view-only) fallback method, if one is set
-     */
-    function _tryStaticFallbackMethod() internal view {
-        (Safe safe, address sender,, address handler) = _getContextAndHandler();
-        // If a handler is set, call it and return the result
-        if (handler != address(0)) {
-            IStaticFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
-            // Return the result of the call to the FallbackManager
-            _return();
-        }
-    }
+    // /**
+    //  * Try to call a static (view-only) fallback method, if one is set
+    //  */
+    // function _tryStaticFallbackMethod() internal view {
+    //     (Safe safe, address sender,, address handler) = _getContextAndHandler();
+    //     // If a handler is set, call it and return the result
+    //     if (handler != address(0)) {
+    //         IStaticFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
+    //         // Return the result of the call to the FallbackManager
+    //         _return();
+    //     }
+    // }
 
-    /**
-     * Try to call a non-static (state-changing) fallback method, if one is set
-     */
-    function _tryFallbackMethod() internal {
-        (Safe safe, address sender,, address handler) = _getContextAndHandler();
-        // If a handler is set, call it and return the result
-        if (handler != address(0)) {
-            IFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
-            // Return the result of the call to the FallbackManager
-            _return();
-        }
-    }
+    // /**
+    //  * Try to call a non-static (state-changing) fallback method, if one is set
+    //  */
+    // function _tryFallbackMethod() internal {
+    //     (Safe safe, address sender,, address handler) = _getContextAndHandler();
+    //     // If a handler is set, call it and return the result
+    //     if (handler != address(0)) {
+    //         IFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
+    //         // Return the result of the call to the FallbackManager
+    //         _return();
+    //     }
+    // }
 
-    /**
-     * Return the result of the call to the FallbackManager
-     * @dev This is a helper function to avoid code duplication in the `_tryStaticFallbackMethod` and `_tryFallbackMethod` functions.
-     *      In order to generalise the return value of the call to the FallbackManager, we use assembly to copy the return data
-     *      of the call to the handler contract to the return data of the call to the FallbackManager.
-     *      This is necessary because the return value of the call to the handler contract is not known at compile time.
-     */
-    function _return() internal pure {
-        assembly {
-            return(0, returndatasize())
-        }
-    }
+    // /**
+    //  * Return the result of the call to the FallbackManager
+    //  * @dev This is a helper function to avoid code duplication in the `_tryStaticFallbackMethod` and `_tryFallbackMethod` functions.
+    //  *      In order to generalise the return value of the call to the FallbackManager, we use assembly to copy the return data
+    //  *      of the call to the handler contract to the return data of the call to the FallbackManager.
+    //  *      This is necessary because the return value of the call to the handler contract is not known at compile time.
+    //  */
+    // function _return() internal pure {
+    //     assembly {
+    //         return(0, returndatasize())
+    //     }
+    // }
 
     /**
      * Get the context and the method handler applicable to the current call
