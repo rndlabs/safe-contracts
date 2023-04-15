@@ -8,8 +8,8 @@ import "./Base.sol";
 abstract contract IERC165Handler is ExtensibleBase {
     // --- events ---
 
-    event AddedInterface(bytes4 interfaceId);
-    event RemovedInterface(bytes4 interfaceId);
+    event AddedInterface(Safe indexed safe, bytes4 interfaceId);
+    event RemovedInterface(Safe indexed safe, bytes4 interfaceId);
 
     // --- storage ---
 
@@ -29,10 +29,10 @@ abstract contract IERC165Handler is ExtensibleBase {
         bool current = safeInterfaces[safe][interfaceId];
         if (supported && !current) {
             safeInterfaces[safe][interfaceId] = true;
-            emit AddedInterface(interfaceId);
+            emit AddedInterface(safe, interfaceId);
         } else if (!supported && current) {
             delete safeInterfaces[safe][interfaceId];
-            emit RemovedInterface(interfaceId);
+            emit RemovedInterface(safe, interfaceId);
         }
     }
 
