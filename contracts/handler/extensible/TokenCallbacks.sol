@@ -18,12 +18,10 @@ abstract contract TokenCallbacks is ExtensibleBase, ERC1155TokenReceiver, ERC721
      */
     function onERC1155Received(address, address, uint256, uint256, bytes calldata)
         external
-        view
+        pure
         override
         returns (bytes4)
     {
-        _tryStaticFallbackMethod();
-
         // Else return the standard value
         return 0xf23a6e61;
     }
@@ -34,12 +32,10 @@ abstract contract TokenCallbacks is ExtensibleBase, ERC1155TokenReceiver, ERC721
      */
     function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata)
         external
-        view
+        pure
         override
         returns (bytes4)
     {
-        _tryStaticFallbackMethod();
-
         // Else return the standard value
         return 0xbc197c81;
     }
@@ -48,9 +44,7 @@ abstract contract TokenCallbacks is ExtensibleBase, ERC1155TokenReceiver, ERC721
      * @notice Handles ERC721 Token callback.
      *  return Standardized onERC721Received return value.
      */
-    function onERC721Received(address, address, uint256, bytes calldata) external view override returns (bytes4) {
-        _tryStaticFallbackMethod();
-
+    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
         // Else return the standard value
         return 0x150b7a02;
     }
