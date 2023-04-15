@@ -54,7 +54,7 @@ library MarshalLib {
             // set isStatic to true if the left-most byte of the data is not 0x00
             isStatic := iszero(shr(248, data))
             handler := shr(96, shl(96, data))
-            selector := shr(224, shl(8, data))
+            selector := shl(168, shr(160, data))
         }
     }
 }
