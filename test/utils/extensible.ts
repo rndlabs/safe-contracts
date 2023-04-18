@@ -42,7 +42,12 @@ export const decodeHandlerFunction = (encodedHandlerFunction: string): [boolean,
     return [isStatic, selector, handler];
 };
 
-export const encodeCustomVerifier = (message: string, domainSeparator: string, typeHash: string, signature: string): [string, string] => {
+export const encodeCustomVerifier = (
+    encodeData: string,
+    domainSeparator: string,
+    typeHash: string,
+    signature: string,
+): [string, string] => {
     // calculate the hash of the message
     const dataHash = ethers.utils.keccak256(
         ethers.utils.solidityPack(
@@ -51,17 +56,17 @@ export const encodeCustomVerifier = (message: string, domainSeparator: string, t
                 "0x19",
                 "0x01",
                 domainSeparator,
-                ethers.utils.keccak256(ethers.utils.solidityPack(["bytes32", "bytes32"], [typeHash, message])),
+                ethers.utils.keccak256(ethers.utils.solidityPack(["bytes32", "bytes"], [typeHash, encodeData])),
             ],
         ),
     );
 
     // create the function fragment for the `safeSignature(bytes)` function
-    const safeSignatureFragment = new ethers.utils.Interface([`function safeSignature(bytes32,bytes32,bytes32,bytes)`]);
-    const encodedMessage = safeSignatureFragment.encodeFunctionData("safeSignature(bytes32,bytes32,bytes32,bytes)", [
+    const safeSignatureFragment = new ethers.utils.Interface([`function safeSignature(bytes32,bytes32,bytes,bytes)`]);
+    const encodedMessage = safeSignatureFragment.encodeFunctionData("safeSignature(bytes32,bytes32,bytes,bytes)", [
         domainSeparator,
         typeHash,
-        message,
+        encodeData,
         signature,
     ]);
 

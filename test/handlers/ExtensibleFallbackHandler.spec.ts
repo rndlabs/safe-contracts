@@ -78,7 +78,7 @@ describe("ExtensibleFallbackHandler", async () => {
                 return string(abi.encodePacked("0x", converted));
             }
 
-            function isValidSafeSignature(address safe, address sender, bytes32 _hash, bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData, bytes calldata payload) external view returns (bytes4) {
+            function isValidSafeSignature(address safe, address sender, bytes32 _hash, bytes32 domainSeparator, bytes32 typeHash, bytes calldata encodeData, bytes calldata payload) external view returns (bytes4) {
                 revert(iToHex(abi.encodePacked(msg.data)));
             }
         }`;
@@ -489,9 +489,12 @@ describe("ExtensibleFallbackHandler", async () => {
                 const domainSeparator = ethers.utils.keccak256("0xdeadbeef");
                 const typeHash = ethers.utils.keccak256("0xbaddad");
                 // abi encode the message
-                const message = ethers.utils.defaultAbiCoder.encode(
-                    ["bytes32"],
-                    [ethers.utils.keccak256("0xbaddadbaddadbaddadbaddadbaddadbaddad")],
+                const encodeData = ethers.utils.solidityPack(
+                    ["bytes32", "bytes32"],
+                    [
+                        ethers.utils.keccak256("0xbaddadbaddadbaddadbaddadbaddadbaddad"),
+                        ethers.utils.keccak256("0xdeadbeefdeadbeefdeadbeefdeadbeefdead"),
+                    ],
                 );
 
                 // set the revert verifier for the domain separator
@@ -503,13 +506,13 @@ describe("ExtensibleFallbackHandler", async () => {
                     [user1, user2],
                 );
 
-                const [dataHash, encodedMessage] = encodeCustomVerifier(message, domainSeparator, typeHash, "0x");
+                const [dataHash, encodedMessage] = encodeCustomVerifier(encodeData, domainSeparator, typeHash, "0x");
 
                 // Test with a domain verifier - should revert with `GS021`
                 await expect(validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, encodedMessage)).to.be.revertedWith(
                     "0x" +
                         // function call for isValidSafeSignature
-                        "b9ed98bd" +
+                        "53f00b14" +
                         "000000000000000000000000" +
                         safe.address.slice(2).toLowerCase() +
                         "000000000000000000000000" +
@@ -517,10 +520,9 @@ describe("ExtensibleFallbackHandler", async () => {
                         dataHash.slice(2) +
                         domainSeparator.slice(2) +
                         typeHash.slice(2) +
-                        message.slice(2) +
                         "00000000000000000000000000000000000000000000000000000000000000e0" +
-                        "0000000000000000000000000000000000000000000000000000000000000040" +
-                        "0000000000000000000000000000000000000000000000000000000000000080" +
+                        "0000000000000000000000000000000000000000000000000000000000000140" +
+                        ethers.utils.defaultAbiCoder.encode(["bytes"], [encodeData]).slice(66) +
                         "0000000000000000000000000000000000000000000000000000000000000000",
                 );
             });
@@ -569,14 +571,14 @@ describe("ExtensibleFallbackHandler", async () => {
                 const domainSeparator = ethers.utils.keccak256("0xdeadbeef");
                 const typeHash = ethers.utils.keccak256("0xbaddad");
                 // abi encode the message
-                const message = ethers.utils.defaultAbiCoder.encode(
+                const encodeData = ethers.utils.defaultAbiCoder.encode(
                     ["bytes32"],
                     [ethers.utils.keccak256("0xbaddadbaddadbaddadbaddadbaddadbaddad")],
                 );
 
-                const [dataHash, encodedMessage] = encodeCustomVerifier(message, domainSeparator, typeHash, "0x");
+                const [dataHash, encodedMessage] = encodeCustomVerifier(encodeData, domainSeparator, typeHash, "0x");
 
-                // Test without a domain verifier - should revert with `GS020`
+                // Test without a domain verifier - should revert with `GS026`
                 await expect(validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, encodedMessage)).to.be.revertedWith("GS026");
 
                 // Test with a domain verifier - should return magic value
