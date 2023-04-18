@@ -533,9 +533,12 @@ describe("ExtensibleFallbackHandler", async () => {
                 const forgedDomainSeparator = ethers.utils.keccak256("0xdeadbeefdeadbeef");
                 const typeHash = ethers.utils.keccak256("0xbaddad");
                 // abi encode the message
-                const message = ethers.utils.defaultAbiCoder.encode(
-                    ["bytes32"],
-                    [ethers.utils.keccak256("0xbaddadbaddadbaddadbaddadbaddadbaddad")],
+                const encodeData = ethers.utils.solidityPack(
+                    ["bytes32", "bytes32"],
+                    [
+                        ethers.utils.keccak256("0xbaddadbaddadbaddadbaddadbaddadbaddad"),
+                        ethers.utils.keccak256("0xdeadbeefdeadbeefdeadbeefdeadbeefdead"),
+                    ],
                 );
 
                 // calculate the hash of the message
@@ -546,17 +549,17 @@ describe("ExtensibleFallbackHandler", async () => {
                             "0x19",
                             "0x01",
                             forgedDomainSeparator,
-                            ethers.utils.keccak256(ethers.utils.solidityPack(["bytes32", "bytes32"], [typeHash, message])),
+                            ethers.utils.keccak256(ethers.utils.solidityPack(["bytes32", "bytes"], [typeHash, encodeData])),
                         ],
                     ),
                 );
 
-                // create the function fragment for the `safeSignature(bytes)` function
-                const safeSignatureFragment = new ethers.utils.Interface([`function safeSignature(bytes32,bytes32,bytes32,bytes)`]);
-                const encodedMessage = safeSignatureFragment.encodeFunctionData("safeSignature(bytes32,bytes32,bytes32,bytes)", [
+                // create the function fragment for the `safeSignature(bytes32,bytes32,bytes,bytes)` function
+                const safeSignatureFragment = new ethers.utils.Interface([`function safeSignature(bytes32,bytes32,bytes,bytes)`]);
+                const encodedMessage = safeSignatureFragment.encodeFunctionData("safeSignature(bytes32,bytes32,bytes,bytes)", [
                     domainSeparator,
                     typeHash,
-                    message,
+                    encodeData,
                     "0x",
                 ]);
 
