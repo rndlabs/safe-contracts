@@ -33,7 +33,7 @@ interface ISafeSignatureVerifier {
         bytes32 _hash,
         bytes32 domainSeparator,
         bytes32 typeHash,
-        bytes32 encodeData,
+        bytes calldata encodeData,
         bytes calldata payload
     ) external view returns (bytes4 magic);
 }
@@ -51,8 +51,8 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
     // --- constants ---
     // keccak256("SafeMessage(bytes message)");
     bytes32 private constant SAFE_MSG_TYPEHASH = 0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca;
-    // keccak256("safeSignature(bytes32,bytes32,bytes32,bytes)");
-    bytes4 private constant SAFE_SIGNATURE_MAGIC_VALUE = 0x0c6f1805;
+    // keccak256("safeSignature(bytes32,bytes32,bytes,bytes)");
+    bytes4 private constant SAFE_SIGNATURE_MAGIC_VALUE = 0x5fd7e97d;
 
     // --- storage ---
     mapping(Safe => mapping(bytes32 => ISafeSignatureVerifier)) public domainVerifiers;
@@ -117,12 +117,13 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
         // Check if the signature is for an `ISafeSignatureVerifier` and if it is valid for the domain.
         if (sigSelector == SAFE_SIGNATURE_MAGIC_VALUE) {
             // Get the domainSeparator from the signature.
-            (bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData) =
-                abi.decode(signature[4:100], (bytes32, bytes32, bytes32));
+            (bytes32 domainSeparator, bytes32 typeHash) = abi.decode(signature[4:68], (bytes32, bytes32));
+
             ISafeSignatureVerifier verifier = domainVerifiers[safe][domainSeparator];
             // Check if there is an `ISafeSignatureVerifier` for the domain.
             if (address(verifier) != address(0)) {
-                bytes memory payload = signature[100:];
+                bytes memory encodeData = SolidityTools.getNestedCallData(100, 68);
+                bytes memory payload = SolidityTools.getNestedCallData(100, 100);
 
                 // Check that the signature is valid for the domain.
                 if (keccak256(EIP712.encodeMessageData(domainSeparator, typeHash, encodeData)) == _hash) {
@@ -165,7 +166,7 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
         returns (bytes4 magic)
     {
         bytes memory messageData =
-            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, keccak256(_hash));
+            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(_hash)));
         bytes32 messageHash = keccak256(messageData);
         if (signature.length == 0) {
             // approved hashes
@@ -178,12 +179,30 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
     }
 }
 
+library SolidityTools {
+    /**
+     * Get the nested dynamic data from calldata.
+     * @param _offset The dynamic offset of the nested calldata
+     * @param _nestedOffset The offset within the nested calldata, exclusive of the selector
+     */
+    function getNestedCallData(uint256 _offset, uint256 _nestedOffset) internal pure returns (bytes memory data) {
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            let ptr := calldataload(add(_offset, _nestedOffset))
+            let len := add(32, calldataload(add(4, add(_offset, ptr))))
+            data := mload(0x40)
+            calldatacopy(data, add(add(4, _offset), ptr), len)
+            mstore(0x40, add(data, len))
+        }
+    }
+}
+
 library EIP712 {
-    function encodeMessageData(bytes32 domainSeparator, bytes32 typeHash, bytes32 message)
+    function encodeMessageData(bytes32 domainSeparator, bytes32 typeHash, bytes memory message)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, keccak256(abi.encode(typeHash, message)));
+        return abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, keccak256(abi.encodePacked(typeHash, message)));
     }
 }

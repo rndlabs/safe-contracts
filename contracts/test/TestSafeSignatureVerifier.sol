@@ -21,7 +21,7 @@ contract TestSafeSignatureVerifier is ISafeSignatureVerifier {
         bytes32 _hash,
         bytes32 domainSeparator,
         bytes32 typeHash,
-        bytes32 encodeData,
+        bytes calldata encodeData,
         bytes calldata
     ) external pure override returns (bytes4 magic) {
         if (_hash == keccak256(EIP712.encodeMessageData(domainSeparator, typeHash, encodeData))) {
