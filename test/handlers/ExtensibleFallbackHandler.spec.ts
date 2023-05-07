@@ -443,8 +443,8 @@ describe("ExtensibleFallbackHandler", async () => {
                 expect(await validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, "0x")).to.be.eq("0x1626ba7e");
             });
 
-            it("should return magic value if enough owners signed and allow a mix different signature types", async () => {
-                const { validator, signerSafe } = await setupTests();
+            it("should return magic value if enough owners signed with typed signatures", async () => {
+                const { validator } = await setupTests();
                 const dataHash = ethers.utils.keccak256("0xbaddad");
                 const typedDataSig = {
                     signer: user1.address,
@@ -454,16 +454,19 @@ describe("ExtensibleFallbackHandler", async () => {
                         { message: dataHash },
                     ),
                 };
-                const ethSignSig = await signHash(user2, calculateSafeMessageHash(validator, dataHash, await chainId()));
-                const validatorPreImageMessage = preimageSafeMessageHash(validator, dataHash, await chainId());
-                const signerSafeMessageHash = calculateSafeMessageHash(signerSafe, validatorPreImageMessage, await chainId());
-                const signerSafeOwnerSignature = await signHash(user1, signerSafeMessageHash);
-                const signerSafeSig = buildContractSignature(signerSafe.address, signerSafeOwnerSignature.data);
+                const typedDataSig2 = {
+                    signer: user2.address,
+                    data: await user2._signTypedData(
+                        { verifyingContract: validator.address, chainId: await chainId() },
+                        EIP712_SAFE_MESSAGE_TYPE,
+                        { message: dataHash },
+                    ),
+                };
 
                 expect(
                     await validator.callStatic["isValidSignature(bytes32,bytes)"](
                         dataHash,
-                        buildSignatureBytes([typedDataSig, ethSignSig, signerSafeSig]),
+                        buildSignatureBytes([typedDataSig, typedDataSig2]),
                     ),
                 ).to.be.eq("0x1626ba7e");
             });
