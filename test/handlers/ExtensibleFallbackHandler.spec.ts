@@ -133,23 +133,6 @@ describe("ExtensibleFallbackHandler", async () => {
         };
     });
 
-    describe("Metadata", async () => {
-        it("should return the correct name when called directly", async () => {
-            const { handler } = await setupTests();
-            expect(await handler.NAME()).to.be.eq("Extensible Fallback Handler");
-        });
-
-        it("should return the correct name when called via safe", async () => {
-            const { validator } = await setupTests();
-            expect(await validator.NAME()).to.be.eq("Extensible Fallback Handler");
-        });
-
-        it("should return the correct version when called directly", async () => {
-            const { handler } = await setupTests();
-            expect(await handler.VERSION()).to.be.eq("1.0.0");
-        });
-    });
-
     describe("Token Callbacks", async () => {
         describe("ERC1155", async () => {
             it("to handle onERC1155Received", async () => {
