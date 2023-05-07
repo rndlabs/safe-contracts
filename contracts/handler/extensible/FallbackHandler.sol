@@ -32,9 +32,9 @@ abstract contract FallbackHandler is ExtensibleBase, IFallbackHandler {
         require(handler != address(0), "method handler not set");
 
         if (isStatic) {
-            result = IStaticFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
+            result = IStaticFallbackMethod(handler).handle(safe, sender, 0, msg.data[:msg.data.length - 20]);
         } else {
-            result = IFallbackMethod(handler).handle(safe, sender, msg.data[:msg.data.length - 20]);
+            result = IFallbackMethod(handler).handle(safe, sender, 0, msg.data[:msg.data.length - 20]);
         }
     }
 }

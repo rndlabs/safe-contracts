@@ -35,7 +35,7 @@ describe("ExtensibleFallbackHandler", async () => {
 
         const mirrorSource = `
         contract Mirror {
-            function handle(address safe, address sender, bytes calldata data) external returns (bytes memory result) {
+            function handle(address safe, address sender, uint256 value, bytes calldata data) external returns (bytes memory result) {
                 return msg.data;
             }
 
@@ -52,10 +52,10 @@ describe("ExtensibleFallbackHandler", async () => {
         contract Counter {
             uint256 public count = 0;
         
-            function handle(address, address, bytes calldata) external returns (bytes memory result) {
+            function handle(address, address, uint256, bytes calldata) external returns (bytes memory result) {
                 bytes4 selector;
                 assembly {
-                    selector := calldataload(132)
+                    selector := calldataload(164)
                 }
         
                 require(selector == 0xdeadbeef, "Invalid data");
@@ -244,13 +244,14 @@ describe("ExtensibleFallbackHandler", async () => {
                 // Check that the method handler is called
                 expect(await user1.call(tx)).to.be.eq(
                     "0x" +
-                        // function selector for `handle(address,address,bytes)`
-                        "443ce2a8" +
+                        // function selector for `handle(address,address,uint256,bytes)`
+                        "25d6803f" +
                         "000000000000000000000000" +
                         safe.address.slice(2).toLowerCase() +
                         "000000000000000000000000" +
                         user1.address.slice(2).toLowerCase() +
-                        "0000000000000000000000000000000000000000000000000000000000000060" +
+                        "0000000000000000000000000000000000000000000000000000000000000000" + // uint256(0)
+                        "0000000000000000000000000000000000000000000000000000000000000080" +
                         "0000000000000000000000000000000000000000000000000000000000000004" +
                         // function selector for `lookAtMe()`
                         "7f8dc53c" +
