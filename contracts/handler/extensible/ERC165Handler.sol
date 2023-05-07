@@ -5,7 +5,13 @@ import {IERC165} from "../../interfaces/IERC165.sol";
 
 import "./Base.sol";
 
-abstract contract IERC165Handler is ExtensibleBase {
+interface IERC165Handler {
+    function safeInterfaces(Safe safe, bytes4 interfaceId) external view returns (bool);
+    function setSupportedInterface(bytes4 interfaceId, bool supported) external;
+    function setSupportedInterfaceBatch(bytes4 interfaceId, bytes32[] calldata handlerWithSelectors) external;
+}
+
+abstract contract ERC165Handler is ExtensibleBase, IERC165Handler {
     // --- events ---
 
     event AddedInterface(Safe indexed safe, bytes4 interfaceId);
@@ -13,7 +19,7 @@ abstract contract IERC165Handler is ExtensibleBase {
 
     // --- storage ---
 
-    mapping(Safe => mapping(bytes4 => bool)) public safeInterfaces;
+    mapping(Safe => mapping(bytes4 => bool)) public override safeInterfaces;
 
     // --- setters ---
 
@@ -22,7 +28,7 @@ abstract contract IERC165Handler is ExtensibleBase {
      * @param interfaceId The interface id whose support is to be set
      * @param supported True if the interface is supported, false otherwise
      */
-    function setSupportedInterface(bytes4 interfaceId, bool supported) public onlySelf {
+    function setSupportedInterface(bytes4 interfaceId, bool supported) public override onlySelf {
         Safe safe = Safe(payable(_manager()));
         // invalid interface id per ERC165 spec
         require(interfaceId != 0xffffffff, "invalid interface id");
@@ -43,6 +49,7 @@ abstract contract IERC165Handler is ExtensibleBase {
      */
     function setSupportedInterfaceBatch(bytes4 _interfaceId, bytes32[] calldata handlerWithSelectors)
         external
+        override
         onlySelf
     {
         Safe safe = Safe(payable(_msgSender()));
@@ -69,7 +76,8 @@ abstract contract IERC165Handler is ExtensibleBase {
      * @return True if the interface is supported
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool) {
-        return interfaceId == type(IERC165).interfaceId || _supportsInterface(interfaceId)
+        return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC165Handler).interfaceId
+            || _supportsInterface(interfaceId)
             || safeInterfaces[Safe(payable(_manager()))][interfaceId];
     }
 
