@@ -427,7 +427,9 @@ describe("ExtensibleFallbackHandler", async () => {
             it("should revert if message was not signed", async () => {
                 const { validator } = await setupTests();
                 const dataHash = ethers.utils.keccak256("0xbaddad");
-                await expect(validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, "0x")).to.be.revertedWith("Hash not approved");
+                await expect(validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, "0x")).to.be.revertedWith(
+                    "Hash not approved",
+                );
             });
 
             it("should revert if signature is not valid", async () => {
@@ -641,7 +643,9 @@ describe("ExtensibleFallbackHandler", async () => {
         describe("setSupportedInterfaceBatch(bytes4, bytes32[]", async () => {
             it("should revert if called by non-safe", async () => {
                 const { handler } = await setupTests();
-                await expect(handler.setSupportedInterfaceBatch("0xdeadbeef", [HashZero])).to.be.revertedWith("only safe can call this method");
+                await expect(handler.setSupportedInterfaceBatch("0xdeadbeef", [HashZero])).to.be.revertedWith(
+                    "only safe can call this method",
+                );
             });
 
             it("should revert if batch contains an invalid interface", async () => {

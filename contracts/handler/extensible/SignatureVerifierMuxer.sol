@@ -40,6 +40,7 @@ interface ISafeSignatureVerifier {
 
 interface ISignatureVerifierMuxer {
     function domainVerifiers(Safe safe, bytes32 domainSeparator) external view returns (ISafeSignatureVerifier);
+
     function setDomainVerifier(bytes32 domainSeparator, ISafeSignatureVerifier verifier) external;
 }
 
@@ -133,9 +134,7 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
                 // Check that the signature is valid for the domain.
                 if (keccak256(EIP712.encodeMessageData(domainSeparator, typeHash, encodeData)) == _hash) {
                     // Preserving the context, call the Safe's authorised `ISafeSignatureVerifier` to verify.
-                    return verifier.isValidSafeSignature(
-                        safe, sender, _hash, domainSeparator, typeHash, encodeData, payload
-                    );
+                    return verifier.isValidSafeSignature(safe, sender, _hash, domainSeparator, typeHash, encodeData, payload);
                 }
             }
         }
@@ -150,13 +149,11 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
      * @param _hash Hash of the data that is signed
      * @param signature The signature to be verified
      */
-    function defaultIsValidSignature(Safe safe, bytes32 _hash, bytes memory signature)
-        internal
-        view
-        returns (bytes4 magic)
-    {
+    function defaultIsValidSignature(Safe safe, bytes32 _hash, bytes memory signature) internal view returns (bytes4 magic) {
         bytes memory messageData = EIP712.encodeMessageData(
-            safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(_hash)))
+            safe.domainSeparator(),
+            SAFE_MSG_TYPEHASH,
+            abi.encode(keccak256(abi.encode(_hash)))
         );
         bytes32 messageHash = keccak256(messageData);
         if (signature.length == 0) {
@@ -189,13 +186,7 @@ library SolidityTools {
 }
 
 library EIP712 {
-    function encodeMessageData(bytes32 domainSeparator, bytes32 typeHash, bytes memory message)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(
-            bytes1(0x19), bytes1(0x01), domainSeparator, keccak256(abi.encodePacked(typeHash, message))
-        );
+    function encodeMessageData(bytes32 domainSeparator, bytes32 typeHash, bytes memory message) internal pure returns (bytes memory) {
+        return abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, keccak256(abi.encodePacked(typeHash, message)));
     }
 }
