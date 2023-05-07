@@ -7,7 +7,9 @@ import "./Base.sol";
 
 interface IERC165Handler {
     function safeInterfaces(Safe safe, bytes4 interfaceId) external view returns (bool);
+
     function setSupportedInterface(bytes4 interfaceId, bool supported) external;
+
     function setSupportedInterfaceBatch(bytes4 interfaceId, bytes32[] calldata handlerWithSelectors) external;
 }
 
@@ -47,16 +49,11 @@ abstract contract ERC165Handler is ExtensibleBase, IERC165Handler {
      * @param _interfaceId The interface id to set
      * @param handlerWithSelectors The handlers encoded with the 4-byte selectors of the methods
      */
-    function setSupportedInterfaceBatch(bytes4 _interfaceId, bytes32[] calldata handlerWithSelectors)
-        external
-        override
-        onlySelf
-    {
+    function setSupportedInterfaceBatch(bytes4 _interfaceId, bytes32[] calldata handlerWithSelectors) external override onlySelf {
         Safe safe = Safe(payable(_msgSender()));
         bytes4 interfaceId;
         for (uint256 i = 0; i < handlerWithSelectors.length; i++) {
-            (bool isStatic, bytes4 selector, address handlerAddress) =
-                MarshalLib.decodeWithSelector(handlerWithSelectors[i]);
+            (bool isStatic, bytes4 selector, address handlerAddress) = MarshalLib.decodeWithSelector(handlerWithSelectors[i]);
             _setSafeMethod(safe, selector, MarshalLib.encode(isStatic, handlerAddress));
             if (i > 0) {
                 interfaceId ^= selector;
@@ -76,8 +73,11 @@ abstract contract ERC165Handler is ExtensibleBase, IERC165Handler {
      * @return True if the interface is supported
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool) {
-        return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC165Handler).interfaceId
-            || _supportsInterface(interfaceId) || safeInterfaces[Safe(payable(_manager()))][interfaceId];
+        return
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC165Handler).interfaceId ||
+            _supportsInterface(interfaceId) ||
+            safeInterfaces[Safe(payable(_manager()))][interfaceId];
     }
 
     // --- internal ---
