@@ -79,11 +79,7 @@ abstract contract ExtensibleBase is HandlerContext {
      * @return isStatic Whether the method is static (`view`) or not
      * @return handler the address of the handler contract
      */
-    function _getContextAndHandler()
-        internal
-        view
-        returns (Safe safe, address sender, bool isStatic, address handler)
-    {
+    function _getContextAndHandler() internal view returns (Safe safe, address sender, bool isStatic, address handler) {
         (safe, sender) = _getContext();
         (isStatic, handler) = MarshalLib.decode(safeMethods[safe][msg.sig]);
     }

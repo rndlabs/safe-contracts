@@ -16,12 +16,7 @@ abstract contract TokenCallbacks is ExtensibleBase, ERC1155TokenReceiver, ERC721
      * @notice Handles ERC1155 Token callback.
      * return Standardized onERC1155Received return value.
      */
-    function onERC1155Received(address, address, uint256, uint256, bytes calldata)
-        external
-        pure
-        override
-        returns (bytes4)
-    {
+    function onERC1155Received(address, address, uint256, uint256, bytes calldata) external pure override returns (bytes4) {
         // Else return the standard value
         return 0xf23a6e61;
     }
@@ -30,12 +25,13 @@ abstract contract TokenCallbacks is ExtensibleBase, ERC1155TokenReceiver, ERC721
      * @notice Handles ERC1155 Token batch callback.
      * return Standardized onERC1155BatchReceived return value.
      */
-    function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata)
-        external
-        pure
-        override
-        returns (bytes4)
-    {
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) external pure override returns (bytes4) {
         // Else return the standard value
         return 0xbc197c81;
     }
