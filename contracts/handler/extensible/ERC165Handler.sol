@@ -77,8 +77,7 @@ abstract contract ERC165Handler is ExtensibleBase, IERC165Handler {
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool) {
         return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC165Handler).interfaceId
-            || _supportsInterface(interfaceId)
-            || safeInterfaces[Safe(payable(_manager()))][interfaceId];
+            || _supportsInterface(interfaceId) || safeInterfaces[Safe(payable(_manager()))][interfaceId];
     }
 
     // --- internal ---

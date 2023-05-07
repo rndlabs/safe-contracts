@@ -100,9 +100,9 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
      * @param signature The signature to be verified
      * @return magic Standardised ERC1271 return value
      */
-    function isValidSignature(bytes32 _hash, bytes calldata signature) external override view returns (bytes4 magic) {
+    function isValidSignature(bytes32 _hash, bytes calldata signature) external view override returns (bytes4 magic) {
         (Safe safe, address sender) = _getContext();
-        
+
         bytes4 sigSelector;
         // solhint-disable-next-line no-inline-assembly
         assembly {
@@ -155,8 +155,9 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
         view
         returns (bytes4 magic)
     {
-        bytes memory messageData =
-            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(_hash))));
+        bytes memory messageData = EIP712.encodeMessageData(
+            safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(_hash)))
+        );
         bytes32 messageHash = keccak256(messageData);
         if (signature.length == 0) {
             // approved hashes
@@ -193,6 +194,8 @@ library EIP712 {
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, keccak256(abi.encodePacked(typeHash, message)));
+        return abi.encodePacked(
+            bytes1(0x19), bytes1(0x01), domainSeparator, keccak256(abi.encodePacked(typeHash, message))
+        );
     }
 }
