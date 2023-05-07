@@ -141,7 +141,7 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
         }
 
         // domainVerifier doesn't exist or the signature is invalid for the domain - fall back to the default
-        return defaultIsValidSignature(safe, abi.encode(_hash), signature);
+        return defaultIsValidSignature(safe, _hash, signature);
     }
 
     /**
@@ -150,13 +150,13 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
      * @param _hash Hash of the data that is signed
      * @param signature The signature to be verified
      */
-    function defaultIsValidSignature(Safe safe, bytes memory _hash, bytes memory signature)
+    function defaultIsValidSignature(Safe safe, bytes32 _hash, bytes memory signature)
         internal
         view
         returns (bytes4 magic)
     {
         bytes memory messageData =
-            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(_hash)));
+            EIP712.encodeMessageData(safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(_hash))));
         bytes32 messageHash = keccak256(messageData);
         if (signature.length == 0) {
             // approved hashes
