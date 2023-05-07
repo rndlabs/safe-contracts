@@ -38,6 +38,11 @@ interface ISafeSignatureVerifier {
     ) external view returns (bytes4 magic);
 }
 
+interface ISignatureVerifierMuxer {
+    function domainVerifiers(Safe safe, bytes32 domainSeparator) external view returns (ISafeSignatureVerifier);
+    function setDomainVerifier(bytes32 domainSeparator, ISafeSignatureVerifier verifier) external;
+}
+
 /**
  * @title ERC-1271 Signature Verifier Multiplexer (Muxer)
  * @author mfw78 <mfw78@rndlabs.xyz>
@@ -47,7 +52,7 @@ interface ISafeSignatureVerifier {
  *      an `ISafeSignatureVerifier` from being able to verify signatures for multiple domainSeparators, however
  *      each domainSeparator requires specific approval by Safe.
  */
-abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator {
+abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureVerifierMuxer {
     // --- constants ---
     // keccak256("SafeMessage(bytes message)");
     bytes32 private constant SAFE_MSG_TYPEHASH = 0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca;
@@ -55,7 +60,7 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
     bytes4 private constant SAFE_SIGNATURE_MAGIC_VALUE = 0x5fd7e97d;
 
     // --- storage ---
-    mapping(Safe => mapping(bytes32 => ISafeSignatureVerifier)) public domainVerifiers;
+    mapping(Safe => mapping(bytes32 => ISafeSignatureVerifier)) public override domainVerifiers;
 
     // --- events ---
     event AddedDomainVerifier(Safe indexed safe, bytes32 domainSeparator, ISafeSignatureVerifier verifier);
@@ -72,7 +77,7 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
      * @param domainSeparator The domainSeparator authorised for the `ISafeSignatureVerifier`
      * @param newVerifier A contract that implements `ISafeSignatureVerifier`
      */
-    function setDomainVerifier(bytes32 domainSeparator, ISafeSignatureVerifier newVerifier) public onlySelf {
+    function setDomainVerifier(bytes32 domainSeparator, ISafeSignatureVerifier newVerifier) public override onlySelf {
         Safe safe = Safe(payable(_msgSender()));
         ISafeSignatureVerifier oldVerifier = domainVerifiers[safe][domainSeparator];
         if (address(newVerifier) == address(0) && address(oldVerifier) != address(0)) {
@@ -95,7 +100,7 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ISignatureValidator 
      * @param signature The signature to be verified
      * @return magic Standardised ERC1271 return value
      */
-    function isValidSignature(bytes32 _hash, bytes calldata signature) external view returns (bytes4 magic) {
+    function isValidSignature(bytes32 _hash, bytes calldata signature) external override view returns (bytes4 magic) {
         (Safe safe, address sender) = _getContext();
         
         bytes4 sigSelector;
