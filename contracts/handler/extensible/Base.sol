@@ -6,11 +6,11 @@ import {HandlerContext} from "../HandlerContext.sol";
 import {MarshalLib} from "./MarshalLib.sol";
 
 interface IFallbackMethod {
-    function handle(Safe safe, address sender, bytes calldata data) external returns (bytes memory result);
+    function handle(Safe safe, address sender, uint256 value, bytes calldata data) external returns (bytes memory result);
 }
 
 interface IStaticFallbackMethod {
-    function handle(Safe safe, address sender, bytes calldata data) external view returns (bytes memory result);
+    function handle(Safe safe, address sender, uint256 value, bytes calldata data) external view returns (bytes memory result);
 }
 
 /**
