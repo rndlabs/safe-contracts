@@ -145,21 +145,6 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
     }
 
     /**
-     * @notice Legacy EIP-1271 signature validation method.
-     * @dev Implementation of ISignatureValidator (see `interfaces/ISignatureValidator.sol`)
-     * @param _data Arbitrary length data signed on the behalf of address(msg.sender).
-     * @param _signature Signature byte array associated with _data.
-     * @return a bool upon valid or invalid signature with corresponding _data.
-     */
-    function isValidSignature(bytes memory _data, bytes memory _signature) public view override returns (bytes4) {
-        // Caller should be a Safe
-        Safe safe = Safe(payable(msg.sender));
-        return defaultIsValidSignature(safe, _data, _signature) == ERC1271.isValidSignature.selector
-            ? EIP1271_MAGIC_VALUE
-            : bytes4(0);
-    }
-
-    /**
      * Default Safe signature validation (approved hashes / threshold signatures)
      * @param safe The safe being asked to validate the signature
      * @param _hash Hash of the data that is signed
