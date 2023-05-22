@@ -349,6 +349,13 @@ describe("ExtensibleFallbackHandler", async () => {
     });
 
     describe("Signature Verifier Muxer", async () => {
+        describe("supportsInterface(bytes4)", async () => {
+            it("should return true for supporting ERC1271", async () => {
+                const { handler } = await setupTests();
+                expect(await handler.callStatic.supportsInterface("0x1626ba7e")).to.be.eq(true);
+            });
+        });
+
         describe("setDomainVerifier(bytes32,address)", async () => {
             it("should revert if called by non-safe", async () => {
                 const { handler, mirror } = await setupTests();
