@@ -18,6 +18,7 @@ contract ExtensibleFallbackHandler is FallbackHandler, SignatureVerifierMuxer, T
      */
     function _supportsInterface(bytes4 interfaceId) internal pure override returns (bool) {
         return
+            interfaceId == type(ERC1271).interfaceId ||
             interfaceId == type(ISignatureVerifierMuxer).interfaceId ||
             interfaceId == type(ERC165Handler).interfaceId ||
             interfaceId == type(IFallbackHandler).interfaceId ||
