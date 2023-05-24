@@ -28,6 +28,7 @@ abstract contract FallbackHandler is ExtensibleBase, IFallbackHandler {
     // --- fallback ---
 
     fallback(bytes calldata) external returns (bytes memory result) {
+        require(msg.data.length >= 24, "invalid method selector");
         (Safe safe, address sender, bool isStatic, address handler) = _getContextAndHandler();
         require(handler != address(0), "method handler not set");
 
