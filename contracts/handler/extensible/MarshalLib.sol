@@ -14,7 +14,7 @@ library MarshalLib {
     }
 
     function encodeWithSelector(bool isStatic, bytes4 selector, address handler) internal pure returns (bytes32 data) {
-        data = bytes32(uint256(uint160(handler)) | (isStatic ? 0 << 248 : 1) | (uint256(uint32(selector)) << 216));
+        data = bytes32(uint256(uint160(handler)) | (isStatic ? 0 : (1 << 248)) | (uint256(uint32(selector)) << 216));
     }
 
     /**
