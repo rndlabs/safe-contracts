@@ -164,6 +164,22 @@ describe("ExtensibleFallbackHandler", async () => {
         });
     });
 
+    describe("Fallback Handler", async () => {
+        describe("fallback()", async () => {
+            it("should revert if call to safe is less than 4 bytes (method selector)", async () => {
+                const { validator } = await setupTests();
+
+                const tx = {
+                    to: validator.address,
+                    data: "0x112233",
+                };
+
+                // Confirm method handler is not set (call should revert)
+                await expect(user1.call(tx)).to.be.revertedWith("invalid method selector");
+            });
+        });
+    });
+
     describe("Custom methods", async () => {
         describe("setSafeMethod(bytes4,bytes32)", async () => {
             it("should revert if called by non-safe", async () => {
