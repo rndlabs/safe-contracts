@@ -10,7 +10,9 @@ interface IERC165Handler {
 
     function setSupportedInterface(bytes4 interfaceId, bool supported) external;
 
-    function setSupportedInterfaceBatch(bytes4 interfaceId, bytes32[] calldata handlerWithSelectors) external;
+    function addSupportedInterfaceBatch(bytes4 interfaceId, bytes32[] calldata handlerWithSelectors) external;
+
+    function removeSupportedInterfaceBatch(bytes4 interfaceId, bytes4[] calldata selectors) external;
 }
 
 abstract contract ERC165Handler is ExtensibleBase, IERC165Handler {
@@ -45,11 +47,11 @@ abstract contract ERC165Handler is ExtensibleBase, IERC165Handler {
     }
 
     /**
-     * Batch setter for selectors of an interface
+     * Batch add selectors for an interface.
      * @param _interfaceId The interface id to set
      * @param handlerWithSelectors The handlers encoded with the 4-byte selectors of the methods
      */
-    function setSupportedInterfaceBatch(bytes4 _interfaceId, bytes32[] calldata handlerWithSelectors) external override onlySelf {
+    function addSupportedInterfaceBatch(bytes4 _interfaceId, bytes32[] calldata handlerWithSelectors) external override onlySelf {
         Safe safe = Safe(payable(_msgSender()));
         bytes4 interfaceId;
         for (uint256 i = 0; i < handlerWithSelectors.length; i++) {
@@ -64,6 +66,27 @@ abstract contract ERC165Handler is ExtensibleBase, IERC165Handler {
 
         require(interfaceId == _interfaceId, "interface id mismatch");
         setSupportedInterface(_interfaceId, true);
+    }
+
+    /**
+     * Batch remove selectors for an interface.
+     * @param _interfaceId the interface id to remove
+     * @param selectors The selectors of the methods to remove
+     */
+    function removeSupportedInterfaceBatch(bytes4 _interfaceId, bytes4[] calldata selectors) external override onlySelf {
+        Safe safe = Safe(payable(_msgSender()));
+        bytes4 interfaceId;
+        for (uint256 i = 0; i < selectors.length; i++) {
+            _setSafeMethod(safe, selectors[i], bytes32(0));
+            if (i > 0) {
+                interfaceId ^= selectors[i];
+            } else {
+                interfaceId = selectors[i];
+            }
+        }
+
+        require(interfaceId == _interfaceId, "interface id mismatch");
+        setSupportedInterface(_interfaceId, false);
     }
 
     /**

@@ -656,10 +656,10 @@ describe("ExtensibleFallbackHandler", async () => {
             });
         });
 
-        describe("setSupportedInterfaceBatch(bytes4, bytes32[]", async () => {
+        describe("addSupportedInterfaceBatch(bytes4, bytes32[]", async () => {
             it("should revert if called by non-safe", async () => {
                 const { handler } = await setupTests();
-                await expect(handler.setSupportedInterfaceBatch("0xdeadbeef", [HashZero])).to.be.revertedWith(
+                await expect(handler.addSupportedInterfaceBatch("0xdeadbeef", [HashZero])).to.be.revertedWith(
                     "only safe can call this method",
                 );
             });
@@ -670,7 +670,7 @@ describe("ExtensibleFallbackHandler", async () => {
                     executeContractCallWithSigners(
                         safe,
                         validator,
-                        "setSupportedInterfaceBatch",
+                        "addSupportedInterfaceBatch",
                         ["0xffffffff", [HashZero]],
                         [user1, user2],
                     ),
@@ -692,7 +692,7 @@ describe("ExtensibleFallbackHandler", async () => {
                 const batch = [selector1, selector2, selector3].map((selector) => encodeHandlerFunction(true, selector, mirror.address));
 
                 await expect(
-                    executeContractCallWithSigners(safe, validator, "setSupportedInterfaceBatch", [interfaceId, batch], [user1, user2]),
+                    executeContractCallWithSigners(safe, validator, "addSupportedInterfaceBatch", [interfaceId, batch], [user1, user2]),
                 )
                     .to.emit(handler, "AddedSafeMethod")
                     .withArgs(safe.address, "0xabababab", encodeHandler(true, mirror.address))
@@ -705,6 +705,78 @@ describe("ExtensibleFallbackHandler", async () => {
 
                 // check that the interface is supported
                 expect(await validator.supportsInterface(interfaceId)).to.be.true;
+            });
+        });
+
+        describe("removeSupportedInterfaceBatch(bytes4, bytes4[]", async () => {
+            it("should revert if called by non-safe", async () => {
+                const { handler } = await setupTests();
+                await expect(handler.removeSupportedInterfaceBatch("0xdeadbeef", ["0xdeadbeef"])).to.be.revertedWith(
+                    "only safe can call this method",
+                );
+            });
+
+            it("should remove all methods in a batch", async () => {
+                const { validator, safe, handler, mirror } = await setupTests();
+
+                // calculate the selector for each function
+                const selector1 = "0xabababab";
+                const selector2 = "0xcdcdcdcd";
+                const selector3 = "0xefefefef";
+
+                // calculate the interface id which is the xor of all selectors
+                const interfaceId = ethers.utils.hexlify(ethers.BigNumber.from(selector1).xor(selector2).xor(selector3));
+
+                // create the batch
+                const batch = [selector1, selector2, selector3].map((selector) => encodeHandlerFunction(true, selector, mirror.address));
+
+                await expect(
+                    executeContractCallWithSigners(safe, validator, "addSupportedInterfaceBatch", [interfaceId, batch], [user1, user2]),
+                )
+                    .to.emit(handler, "AddedSafeMethod")
+                    .withArgs(safe.address, "0xabababab", encodeHandler(true, mirror.address))
+                    .to.emit(handler, "AddedSafeMethod")
+                    .withArgs(safe.address, "0xcdcdcdcd", encodeHandler(true, mirror.address))
+                    .to.emit(handler, "AddedSafeMethod")
+                    .withArgs(safe.address, "0xefefefef", encodeHandler(true, mirror.address))
+                    .to.emit(handler, "AddedInterface")
+                    .withArgs(safe.address, interfaceId);
+
+                // check that the interface is supported
+                expect(await validator.supportsInterface(interfaceId)).to.be.true;
+
+                // remove the interface with the incorrect interfaceId
+                await expect(
+                    executeContractCallWithSigners(
+                        safe,
+                        validator,
+                        "removeSupportedInterfaceBatch",
+                        ["0xdeadbeef", [selector1, selector2, selector3]],
+                        [user1, user2],
+                    ),
+                ).to.be.revertedWith("GS013");
+
+                // remove the interface
+                await expect(
+                    executeContractCallWithSigners(
+                        safe,
+                        validator,
+                        "removeSupportedInterfaceBatch",
+                        [interfaceId, [selector1, selector2, selector3]],
+                        [user1, user2],
+                    ),
+                )
+                    .to.emit(handler, "RemovedSafeMethod")
+                    .withArgs(safe.address, "0xabababab")
+                    .to.emit(handler, "RemovedSafeMethod")
+                    .withArgs(safe.address, "0xcdcdcdcd")
+                    .to.emit(handler, "RemovedSafeMethod")
+                    .withArgs(safe.address, "0xefefefef")
+                    .to.emit(handler, "RemovedInterface")
+                    .withArgs(safe.address, interfaceId);
+
+                // check that the interface is no longer supported
+                expect(await validator.supportsInterface(interfaceId)).to.be.false;
             });
         });
     });
