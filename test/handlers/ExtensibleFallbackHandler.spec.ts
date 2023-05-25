@@ -445,6 +445,14 @@ describe("ExtensibleFallbackHandler", async () => {
                 await expect(validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, "0xdeaddeaddeaddead")).to.be.reverted;
             });
 
+            it("should revert through default flow if signature is short", async () => {
+                const { validator } = await setupTests();
+                const dataHash = ethers.utils.keccak256("0xbaddad");
+                await expect(validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, "0x5fd7e97ddead")).to.be.revertedWith(
+                    "GS020",
+                );
+            });
+
             it("should return magic value if message was signed", async () => {
                 const { safe, validator, signLib } = await setupTests();
                 const dataHash = ethers.utils.keccak256("0xbaddad");

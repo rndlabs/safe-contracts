@@ -112,7 +112,8 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
                 sigSelector := shl(224, shr(224, calldataload(signature.offset)))
             }
 
-            if (sigSelector == SAFE_SIGNATURE_MAGIC_VALUE) {
+            // Guard against short signatures that would cause abi.decode to revert.
+            if (sigSelector == SAFE_SIGNATURE_MAGIC_VALUE && signature.length >= 68) {
                 // Signature is for an `ISafeSignatureVerifier` - decode the signature.
                 // Layout of the `signature`:
                 // 0x00 - 0x04: selector
