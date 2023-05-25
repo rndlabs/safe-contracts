@@ -502,7 +502,7 @@ describe("ExtensibleFallbackHandler", async () => {
                     [user1, user2],
                 );
 
-                const [dataHash, encodedMessage] = encodeCustomVerifier(encodeData, domainSeparator, typeHash, "0x");
+                const [dataHash, encodedMessage] = encodeCustomVerifier(encodeData, domainSeparator, typeHash, "0xdeadbeef");
 
                 // Test with a domain verifier - should revert with `GS021`
                 await expect(validator.callStatic["isValidSignature(bytes32,bytes)"](dataHash, encodedMessage)).to.be.revertedWith(
@@ -519,7 +519,8 @@ describe("ExtensibleFallbackHandler", async () => {
                         "00000000000000000000000000000000000000000000000000000000000000e0" +
                         "0000000000000000000000000000000000000000000000000000000000000140" +
                         ethers.utils.defaultAbiCoder.encode(["bytes"], [encodeData]).slice(66) +
-                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "0000000000000000000000000000000000000000000000000000000000000020" +
+                        "deadbeef00000000000000000000000000000000000000000000000000000000",
                 );
             });
 
