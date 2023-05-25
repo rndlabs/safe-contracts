@@ -134,9 +134,11 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
 
                     // Scope variables to prevent stack too deep errors.
                     {
-                        uint256 encodeDataLength = abi.decode(signature[132:164], (uint256));
-                        encodeData = signature[164:(164 + encodeDataLength)];
-                        payload = signature[164 + encodeDataLength + 32:];
+                        uint256 payloadOffset = 164 + abi.decode(signature[132:164], (uint256));
+                        encodeData = signature[164:payloadOffset];
+                        uint256 payloadStart = payloadOffset + 32;
+                        uint256 payloadLength = abi.decode(signature[payloadOffset:payloadStart], (uint256));
+                        payload = signature[payloadStart:(payloadStart+payloadLength)];
                     }
 
                     // Check that the signature is valid for the domain.
