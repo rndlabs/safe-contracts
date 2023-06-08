@@ -130,17 +130,7 @@ abstract contract SignatureVerifierMuxer is ExtensibleBase, ERC1271, ISignatureV
                 ISafeSignatureVerifier verifier = domainVerifiers[safe][domainSeparator];
                 // Check if there is an `ISafeSignatureVerifier` for the domain.
                 if (address(verifier) != address(0)) {
-                    bytes memory encodeData;
-                    bytes memory payload;
-
-                    // Scope variables to prevent stack too deep errors.
-                    {
-                        uint256 payloadOffset = 164 + abi.decode(signature[132:164], (uint256));
-                        encodeData = signature[164:payloadOffset];
-                        uint256 payloadStart = payloadOffset + 32;
-                        uint256 payloadLength = abi.decode(signature[payloadOffset:payloadStart], (uint256));
-                        payload = signature[payloadStart:(payloadStart + payloadLength)];
-                    }
+                    (, , bytes memory encodeData, bytes memory payload) = abi.decode(signature[4:], (bytes32, bytes32, bytes, bytes));
 
                     // Check that the signature is valid for the domain.
                     if (keccak256(EIP712.encodeMessageData(domainSeparator, typeHash, encodeData)) == _hash) {
