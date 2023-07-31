@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import {IERC165} from "../../interfaces/IERC165.sol";
 
-import "./Base.sol";
+import "./ExtensibleBase.sol";
 
 interface IERC165Handler {
     function safeInterfaces(Safe safe, bytes4 interfaceId) external view returns (bool);

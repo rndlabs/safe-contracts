@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./Base.sol";
+import "./ExtensibleBase.sol";
 
 interface IFallbackHandler {
     function setSafeMethod(bytes4 selector, bytes32 newMethod) external;
