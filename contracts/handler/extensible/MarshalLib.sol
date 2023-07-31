@@ -26,7 +26,7 @@ library MarshalLib {
     function decode(bytes32 data) internal pure returns (bool isStatic, address handler) {
         // solhint-disable-next-line no-inline-assembly
         assembly {
-            // set isStatic to true if the left-most byte of the data is not 0x00
+            // set isStatic to true if the left-most byte of the data is 0x00
             isStatic := iszero(shr(248, data))
             handler := shr(96, shl(96, data))
         }
@@ -35,7 +35,7 @@ library MarshalLib {
     function decodeWithSelector(bytes32 data) internal pure returns (bool isStatic, bytes4 selector, address handler) {
         // solhint-disable-next-line no-inline-assembly
         assembly {
-            // set isStatic to true if the left-most byte of the data is not 0x00
+            // set isStatic to true if the left-most byte of the data is 0x00
             isStatic := iszero(shr(248, data))
             handler := shr(96, shl(96, data))
             selector := shl(168, shr(160, data))
