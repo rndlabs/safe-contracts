@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 import "../../interfaces/ERC1155TokenReceiver.sol";
 import "../../interfaces/ERC721TokenReceiver.sol";
 
-import "./Base.sol";
+import "./ExtensibleBase.sol";
 
 /**
  * @title TokenCallbacks - ERC1155 and ERC721 token callbacks for Safes
