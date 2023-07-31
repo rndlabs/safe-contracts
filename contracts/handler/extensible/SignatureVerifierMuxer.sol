@@ -47,7 +47,7 @@ interface ISignatureVerifierMuxer {
 /**
  * @title ERC-1271 Signature Verifier Multiplexer (Muxer)
  * @author mfw78 <mfw78@rndlabs.xyz>
- * @notice Allows delegating EIP-712 domains to an arbitray `ISafeSignatureVerifier`
+ * @notice Allows delegating EIP-712 domains to an arbitrary `ISafeSignatureVerifier`
  * @dev This multiplexer enforces a strict authorisation per domainSeparator. This is to prevent a malicious
  *     `ISafeSignatureVerifier` from being able to verify signatures for any domainSeparator. This does not prevent
  *      an `ISafeSignatureVerifier` from being able to verify signatures for multiple domainSeparators, however
